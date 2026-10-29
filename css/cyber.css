@@ -1,0 +1,293 @@
+/* Cyber layer — HUD, glitch, scanlines, chamfers. Loaded by index.html only (export stays clean). */
+:root { --cy-cold: var(--color-accent); --cy-scan: 0.018; }
+:root[data-theme="dark"] { --cy-scan: 0.04; }
+
+/* Page-wide grid (was hero-only) */
+.cy-page { background-image: linear-gradient(to right, color-mix(in srgb, var(--color-divider) 70%, transparent) 0 1px, transparent 1px 100%), linear-gradient(to bottom, color-mix(in srgb, var(--color-divider) 70%, transparent) 0 1px, transparent 1px 100%); background-size: 96px 96px; background-position: 0 0; }
+
+/* Glass sections over a softened grid */
+.cy-page > main::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+main > section.blueprint, #contact {
+  background-color: color-mix(in srgb, var(--color-bg) 58%, transparent);
+  background-image: linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 42%, color-mix(in srgb, var(--color-bg) 30%, transparent));
+  backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 35%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 10%, transparent), var(--shadow-sm); }
+:root[data-theme="dark"] main > section.blueprint, :root[data-theme="dark"] #contact {
+  background-color: color-mix(in srgb, var(--color-bg) 52%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 9%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent), 0 12px 40px rgba(0,0,0,0.35); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { main > section.blueprint, #contact { background-color: var(--color-bg); } }
+
+/* Flowing traces down the body grid */
+.cy-flow { position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.cy-flow i { position: absolute; display: block; opacity: 0; will-change: transform; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); animation-iteration-count: infinite; }
+.cy-flow .fv { top: 0; width: 1px; background: linear-gradient(to bottom, transparent, var(--color-accent), transparent); box-shadow: 0 0 14px var(--color-accent); animation-name: cyFlowY; }
+.cy-flow .fh { left: 0; height: 1px; background: linear-gradient(to right, transparent, var(--color-accent), transparent); box-shadow: 0 0 14px var(--color-accent); animation-name: cyFlowX; }
+@keyframes cyFlowY { 0% { transform: translateY(-100%); opacity: 0; } 4% { opacity: 0.9; } 94% { opacity: 0.9; } 100% { transform: translateY(var(--travel-y, 100vh)); opacity: 0; } }
+@keyframes cyFlowX { 0% { transform: translateX(-100%); opacity: 0; } 8% { opacity: 0.85; } 90% { opacity: 0.85; } 100% { transform: translateX(var(--travel-x, 100vw)); opacity: 0; } }
+.cy-page > main, .cy-page > footer, .cy-page > section { position: relative; z-index: 1; }
+
+/* Glow travelling along section borders and separators */
+.cy-edge { position: absolute; inset: -1px; pointer-events: none; z-index: 2; }
+.cy-edge i { position: absolute; display: block; background-repeat: no-repeat; filter: drop-shadow(0 0 4px var(--color-accent)); animation-timing-function: linear; animation-iteration-count: infinite; }
+.cy-edge .et, .cy-edge .eb { left: 0; right: 0; height: 1px; background-image: linear-gradient(to right, transparent, var(--color-accent), transparent); background-size: 28% 100%; animation-name: cyEdgeX; animation-duration: 14s; }
+.cy-edge .et { top: 0; } .cy-edge .eb { bottom: 0; animation-direction: reverse; }
+.cy-edge .el, .cy-edge .er { top: 0; bottom: 0; width: 1px; background-image: linear-gradient(to bottom, transparent, var(--color-accent), transparent); background-size: 100% 28%; animation-name: cyEdgeY; animation-duration: 18s; }
+.cy-edge .el { left: 0; animation-direction: reverse; } .cy-edge .er { right: 0; }
+.cy-sep { background-image: linear-gradient(to right, transparent, var(--color-accent), transparent) !important; background-color: var(--color-divider) !important; background-repeat: no-repeat; background-size: 22% 100%; filter: drop-shadow(0 0 4px var(--color-accent)); animation: cyEdgeX 7s linear infinite; }
+.cy-sep-top::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; pointer-events: none; background: linear-gradient(to right, transparent, var(--color-accent), transparent) no-repeat; background-size: 24% 100%; filter: drop-shadow(0 0 4px var(--color-accent)); animation: cyEdgeX 12s linear infinite; }
+@keyframes cyEdgeX { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+@keyframes cyEdgeY { from { background-position: 0 -40%; } to { background-position: 0 140%; } }
+@media (prefers-reduced-motion: reduce) { .cy-flow, .cy-edge, .cy-sep-top::before { display: none; } .cy-sep { animation: none; background-image: none !important; filter: none; } }
+
+/* CRT scanlines + vignette */
+.cy-scan { position: fixed; inset: 0; z-index: 85; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) calc(var(--cy-scan) * 100%), transparent) 0 1px, transparent 1px 3px); }
+:root[data-theme="dark"] .cy-scan { background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.09) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.28) 100%); }
+
+/* Glitch headline */
+.cy-glitch { position: relative; }
+.cy-glitch::before, .cy-glitch::after { content: attr(data-text); position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.cy-glitch::before { color: var(--cy-hot); }
+.cy-glitch::after { color: var(--cy-cold); }
+.is-glitching .cy-glitch::before { opacity: 0.85; animation: cyG1 0.32s steps(2) both; }
+.is-glitching .cy-glitch::after { opacity: 0.85; animation: cyG2 0.32s steps(2) both; }
+@keyframes cyG1 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(-4px, 0); } 50% { clip-path: inset(55% 0 20% 0); transform: translate(5px, 0); } 100% { clip-path: inset(80% 0 4% 0); transform: translate(-2px, 0); } }
+@keyframes cyG2 { 0% { clip-path: inset(62% 0 12% 0); transform: translate(4px, 0); } 50% { clip-path: inset(8% 0 70% 0); transform: translate(-5px, 0); } 100% { clip-path: inset(30% 0 45% 0); transform: translate(3px, 0); } }
+@keyframes cyShake { 0%,100% { transform: none; } 33% { transform: translateX(2px) skewX(-4deg); } 66% { transform: translateX(-2px); } }
+
+/* Hero HUD */
+.cy-hud { position: absolute; z-index: 2; right: calc(clamp(18px, 5vw, 64px) + 18px); top: 132px; width: 248px; padding: 14px 16px 12px;
+  font-size: 10px; line-height: 16px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent); background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  animation: fadein 0.8s ease-out 1.2s both; }
+.cy-hud b { font-weight: 600; color: var(--color-accent-700); }
+.cy-hud .row { display: flex; justify-content: space-between; gap: 12px; }
+.cy-hud .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--color-divider); color: var(--color-text); }
+.cy-hud .live { display: inline-flex; align-items: center; gap: 6px; color: var(--cy-hot); }
+.cy-hud .live::before { content: ""; width: 6px; height: 6px; background: currentColor; animation: cyBlink 1.1s steps(1) infinite; }
+.cy-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+.cy-bars i { width: 3px; background: var(--color-accent); animation: cyBar 1.6s ease-in-out infinite; }
+.cy-bars i:nth-child(1) { height: 30%; } .cy-bars i:nth-child(2) { height: 55%; animation-delay: 0.2s; } .cy-bars i:nth-child(3) { height: 80%; animation-delay: 0.4s; } .cy-bars i:nth-child(4) { height: 100%; animation-delay: 0.6s; }
+@keyframes cyBar { 50% { opacity: 0.25; } }
+@keyframes cyBlink { 50% { opacity: 0; } }
+.cy-log { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--color-divider); min-height: 64px; color: color-mix(in srgb, var(--color-text) 62%, transparent); }
+.cy-log span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cy-log span:last-child::after { content: "_"; animation: cyBlink 0.9s steps(1) infinite; color: var(--color-accent-700); }
+@media (max-width: 980px) { .cy-hud { display: none; } }
+
+/* Landing-zone markings */
+.cy-lz { position: absolute; pointer-events: none; color: var(--color-accent); z-index: 0; }
+.cy-lz svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.cy-lz .lz-ring { opacity: 0.55; }
+.cy-lz-hero { width: min(52vw, 640px); aspect-ratio: 1; right: -8vw; bottom: -14vw; opacity: 0.14; }
+:root[data-theme="dark"] .cy-lz-hero { opacity: 0.2; }
+.cy-lz-clip { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.cy-lz-contact { width: 420px; height: 420px; right: -110px; top: -110px; opacity: 0.1; }
+#contact > :not(.cy-lz-clip):not(.corner) { position: relative; z-index: 1; }
+@media (max-width: 700px) { .cy-lz-clip { display: none; } }
+.cy-lzband { grid-column: 1 / -1; display: grid; gap: 6px; }
+.lzb-mid { display: flex; align-items: center; gap: 14px; padding: 6px 0; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; color: color-mix(in srgb, var(--color-text) 60%, transparent); white-space: nowrap; overflow: hidden; }
+.lzb-mid b { color: var(--color-bg); background: var(--color-accent-700); padding: 3px 10px; font-weight: 600; }
+.lzb-mid i { flex: 1; min-width: 20px; height: 1px; background: repeating-linear-gradient(90deg, var(--color-accent) 0 8px, transparent 8px 14px); }
+.lzb-mark { width: 34px; height: 34px; flex: 0 0 auto; color: var(--color-accent); }
+.lzb-mark svg { width: 100%; height: 100%; }
+.lzb-chev { color: var(--color-accent); letter-spacing: 0.1em; animation: cyBlink 1.4s steps(1) infinite; }
+.cy-lzband .cy-hazard { height: 8px; }
+@media (prefers-reduced-motion: reduce) { .lzb-chev { animation: none !important; } }
+
+/* Hazard stripe */
+.cy-hazard { display: block; height: 6px; background: repeating-linear-gradient(-45deg, var(--color-accent) 0 6px, transparent 6px 12px); opacity: 0.8; }
+
+/* Section label tab: chamfered plate + index tick */
+.cy-tab { display: inline-flex !important; align-items: center; gap: 10px; padding: 5px 16px 5px 10px; color: var(--color-bg) !important; background: var(--color-accent-700);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); }
+.cy-tab::before { content: ""; width: 6px; height: 6px; background: currentColor; }
+.cy-tabline { display: flex; align-items: center; gap: 10px; }
+.cy-tabline .cy-tab + span { flex: 1; height: 1px; background: var(--color-divider); }
+.cy-tabline .cy-id { font-size: 10px; letter-spacing: 0.18em; font-weight: 600; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+
+/* Chamfered primary buttons: real cut corner (painted fill), no bottom-right mark */
+.btn-primary.blueprint { --btn-fill: var(--color-accent); overflow: visible; border-color: transparent !important; background: linear-gradient(-45deg, transparent 9px, var(--btn-fill) 9px) border-box !important; }
+.btn-primary.blueprint:hover { --btn-fill: var(--color-accent-600); }
+.btn-primary.blueprint:active { --btn-fill: var(--color-accent-700); }
+.btn-primary.blueprint > .corner.br { display: none; }
+/* Hover highlight traces the chamfer (outline can't) */
+.btn-primary.blueprint::after { content: ""; position: absolute; inset: -5px; pointer-events: none; background: var(--color-accent); opacity: 0;
+  clip-path: polygon(evenodd, 0 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 0, 2px 2px, 2px calc(100% - 2px), calc(100% - 11.8px) calc(100% - 2px), calc(100% - 2px) calc(100% - 11.8px), calc(100% - 2px) 2px, 2px 2px); }
+.btn-primary.blueprint.cy-target { outline: none !important; box-shadow: none !important; }
+.btn-primary.blueprint.cy-target::after { opacity: 1; animation: cyTargetRing 0.22s steps(3) both; }
+:root[data-theme="dark"] .btn-primary.blueprint.cy-target { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent)); }
+@keyframes cyTargetRing { 0% { opacity: 0; transform: scale(1.06); } 34% { opacity: 1; } 67% { opacity: 0; transform: scale(1.02); } 100% { opacity: 1; transform: none; } }
+.btn-primary.blueprint::before { content: ""; position: absolute; left: 6px; top: 50%; width: 3px; height: 40%; transform: translateY(-50%); background: currentColor; opacity: 0.6; }
+.btn-primary:hover { animation: cyShake 0.24s steps(3) 1; }
+
+/* Interactive cards: notch + scan sweep + jitter */
+.cy-card { overflow: hidden; }
+.cy-card::before { content: ""; position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: linear-gradient(225deg, var(--color-accent) 0 50%, transparent 50%); opacity: 0.55; transition: opacity 0.15s; }
+.cy-card::after { content: ""; position: absolute; left: 0; right: 0; top: -40%; height: 40%; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-accent) 16%, transparent) 85%, color-mix(in srgb, var(--color-accent) 60%, transparent) 86%, transparent 87%); opacity: 0; }
+.cy-card:hover::before, .cy-card:focus-visible::before { opacity: 1; }
+.cy-card:hover::after, .cy-card:focus-visible::after { opacity: 1; animation: cySweep 0.7s cubic-bezier(0.3, 0, 0.3, 1) both; }
+.cy-card:hover { box-shadow: inset 3px 0 0 var(--color-accent), var(--shadow-md); }
+@keyframes cySweep { to { transform: translateY(350%); } }
+.cy-card.timeline-card { overflow: visible; }
+.cy-card.timeline-card::after { display: none; }
+
+/* Skill meters: lit segments glow, flicker in */
+.cy-meter > span { transition: box-shadow 0.2s; }
+:root[data-theme="dark"] .cy-meter > span.on { box-shadow: 0 0 6px var(--color-accent); }
+
+/* Nav brackets */
+.nav-link.is-active span:last-child::before { content: "[ "; color: var(--color-accent); }
+.nav-link.is-active span:last-child::after { content: " ]"; color: var(--color-accent); }
+
+/* Modal: breach-in wipe + header status */
+.cy-open { animation: cyWipe 0.42s cubic-bezier(0.7, 0, 0.2, 1) both !important; }
+.cy-closing { animation: cyWipeOut 0.4s cubic-bezier(0.7, 0, 0.2, 1) both !important; pointer-events: none; }
+@keyframes cyWipeOut { 0% { clip-path: inset(0 0 0 0); filter: none; } 55% { clip-path: inset(49.5% 0 49.5% 0); filter: brightness(1.8); } 100% { clip-path: inset(49.5% 0 49.5% 0); opacity: 0; } }
+/* Close-button Esc label, set into the bottom border */
+.cy-tip { position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); z-index: 3; padding: 0 5px; pointer-events: none;
+  font-family: var(--font-body); font-size: 9px; line-height: 13px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+  color: var(--color-accent-700); background: var(--color-bg); }
+[data-close]:hover > .cy-tip { color: var(--color-accent-800); }
+
+@keyframes cyWipe { 0% { clip-path: inset(49.5% 0 49.5% 0); filter: brightness(1.8); } 45% { clip-path: inset(49.5% 0 49.5% 0); } 100% { clip-path: inset(0 0 0 0); filter: none; } }
+.cy-status { display: inline-flex; align-items: center; gap: 8px; margin-left: 16px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+.cy-status::before { content: ""; width: 6px; height: 6px; background: var(--color-accent); animation: cyBlink 1.1s steps(1) infinite; }
+
+/* Contact card: hologram shimmer */
+.cy-holo { overflow: hidden; }
+.cy-holo::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 60%; pointer-events: none; background: linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--color-accent) 14%, transparent) 50%, transparent 80%); transform: translateX(-110%); }
+.cy-holo:hover::after { animation: cyHolo 1.4s ease-in-out both; }
+@keyframes cyHolo { to { transform: translateX(260%); } }
+
+/* Boot overlay */
+.cy-boot { position: fixed; inset: 0; z-index: 120; background: var(--color-bg); display: grid; place-items: center; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; color: var(--color-accent-700); font-variant-numeric: tabular-nums; transition: opacity 0.35s ease, visibility 0.35s; }
+.cy-boot.done { opacity: 0; visibility: hidden; }
+.cy-boot .bar { width: min(280px, 70vw); height: 4px; margin-top: 10px; border: 1px solid var(--color-accent); }
+.cy-boot .bar i { display: block; height: 100%; width: 0; background: var(--color-accent); transition: width 0.12s linear; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cy-holo::after, .cy-bars i, .cy-hud .live::before, .cy-status::before { animation: none !important; }
+  .is-glitching .cy-glitch, .is-glitching .cy-glitch::before, .is-glitching .cy-glitch::after { animation: none !important; opacity: 0 !important; }
+  .cy-open, .cy-closing, .btn-primary:hover, .cy-card:hover::after { animation: none !important; }
+  .cy-boot { display: none; }
+  .cy-refresh { display: none !important; }
+}
+
+/* Sfx mute toggle */
+.cy-sfx { position: fixed; left: clamp(14px, 2.4vw, 28px); bottom: clamp(14px, 2.4vw, 28px); z-index: 80; appearance: none; cursor: pointer; height: 34px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px;
+  background: var(--color-bg); color: var(--color-accent-700);
+  font: 600 10px/1 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; transition: background 0.15s ease; }
+.cy-sfx:hover { background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg)); }
+.cy-sfx:active { background: color-mix(in srgb, var(--color-accent) 24%, var(--color-bg)); }
+.cy-sfx:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.cy-sfx[aria-pressed="true"] { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+
+/* Scrollbar: thick accent thumb on a thin translucent accent track */
+@supports (-moz-appearance: none) { html, #sheet, .journal-index { scrollbar-width: thin; scrollbar-color: var(--color-accent) color-mix(in srgb, var(--color-accent) 18%, transparent); } }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+@media (min-width: 901px) { .journal-index { overflow-x: hidden; } }
+.journal-index::-webkit-scrollbar { width: 12px; height: 0; background: transparent; }
+.journal-index::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+::-webkit-scrollbar { width: 12px; height: 12px; background: transparent; }
+::-webkit-scrollbar-track { background: linear-gradient(to right, transparent 5px, color-mix(in srgb, var(--color-accent) 28%, transparent) 5px 7px, transparent 7px); }
+::-webkit-scrollbar-track:horizontal { background: linear-gradient(to bottom, transparent 5px, color-mix(in srgb, var(--color-accent) 28%, transparent) 5px 7px, transparent 7px); }
+::-webkit-scrollbar-thumb { background: var(--color-accent); border: 3px solid transparent; background-clip: padding-box; border-radius: 0; min-height: 48px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--color-accent-600); }
+::-webkit-scrollbar-thumb:active { background-color: var(--color-accent-800); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* In-page scrollbar (large viewports): native one hidden, drawn rail inset from the edge */
+@media (min-width: 900px) {
+  html, #sheet { scrollbar-width: none; }
+  html::-webkit-scrollbar, #sheet::-webkit-scrollbar { width: 0; height: 0; }
+}
+.cy-rail { position: fixed; z-index: 95; right: 14px; top: 20px; bottom: 20px; width: 14px; cursor: pointer; touch-action: none; }
+.cy-rail[hidden] { display: none; }
+@media (max-width: 899px) { .cy-rail { display: none; } }
+.cy-rail::before { content: ""; position: absolute; top: 0; bottom: 0; left: 6px; width: 2px; background: color-mix(in srgb, var(--color-accent) 28%, transparent); }
+.cy-rail-thumb { position: absolute; left: 4px; width: 6px; top: 0; min-height: 40px; background: var(--color-accent); transition: background-color 0.15s ease, width 0.15s ease, left 0.15s ease; }
+.cy-rail:hover .cy-rail-thumb { background: var(--color-accent-600); }
+.cy-rail.is-drag .cy-rail-thumb { background: var(--color-accent-800); left: 3px; width: 8px; }
+
+/* Header: transparent at top, opaque once scrolled */
+header[data-page] { transition: background-color 0.2s ease, box-shadow 0.2s ease; }
+header[data-page].is-stuck { background-color: var(--color-bg) !important; box-shadow: 0 1px 0 var(--color-divider); pointer-events: auto !important; }
+
+/* Quick-jump glitch cut */
+.cy-jump { position: fixed; inset: 0; z-index: 105; pointer-events: none; overflow: hidden; }
+.cy-jump span { position: absolute; left: 0; right: 0; background: var(--color-accent); opacity: 0; animation: cyCut 0.24s steps(3) both; }
+@keyframes cyCut { 0% { opacity: 0.7; transform: translateX(-6%); } 50% { opacity: 0.5; transform: translateX(5%); } 100% { opacity: 0; transform: none; } }
+.cy-jumping main, .cy-jumping #top, .cy-jumping footer { animation: cyJump 0.24s steps(3) both; }
+@keyframes cyJump { 0% { transform: none; } 40% { transform: translateX(-4px) skewX(-2deg); } 70% { transform: translateX(3px); } 100% { transform: none; } }
+.cy-landed { animation: cyLand 0.7s ease-out both; }
+@keyframes cyLand { 0% { box-shadow: inset 0 0 0 1px var(--color-accent), 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent); } 30% { box-shadow: inset 0 0 0 1px var(--color-accent), 0 0 0 6px color-mix(in srgb, var(--color-accent) 0%, transparent); } 100% { box-shadow: inset 0 0 0 1px transparent; } }
+@media (prefers-reduced-motion: reduce) { .cy-jump { display: none; } .cy-jumping main, .cy-jumping #top, .cy-jumping footer, .cy-landed { animation: none !important; } }
+
+/* HUD refresh on theme / palette change */
+.cy-refresh { position: fixed; inset: 0; z-index: 110; pointer-events: none; overflow: hidden; }
+.cy-refresh .band { position: absolute; left: 0; right: 0; top: -22vh; height: 22vh;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-accent) 22%, transparent) 70%, var(--color-accent) 96%, transparent);
+  animation: cyBand 0.62s cubic-bezier(0.5, 0, 0.3, 1) both; }
+.cy-refresh .slice { position: absolute; left: 0; right: 0; background: color-mix(in srgb, var(--color-accent) 30%, transparent); animation: cySlice 0.5s steps(4) both; }
+.cy-refresh .flash { position: absolute; inset: 0; background: var(--color-accent); animation: cyFlash 0.5s ease-out both; }
+.cy-refresh .lbl { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 8px 18px; background: var(--color-bg); border: 1px solid var(--color-accent);
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-accent-700); white-space: nowrap;
+  animation: cyLbl 0.9s steps(1) both; }
+@keyframes cyBand { to { transform: translateY(150vh); } }
+@keyframes cySlice { 0% { opacity: 1; transform: translateX(-3%); } 50% { transform: translateX(4%); } 100% { opacity: 0; transform: none; } }
+@keyframes cyFlash { 0% { opacity: 0.32; } 100% { opacity: 0; } }
+@keyframes cyLbl { 0%, 8%, 16% { opacity: 1; } 4%, 12% { opacity: 0; } 85% { opacity: 1; } 100% { opacity: 0; } }
+.cy-refreshing main, .cy-refreshing #top, .cy-refreshing header { animation: cyJolt 0.36s steps(3) both; }
+@keyframes cyJolt { 0% { transform: none; } 33% { transform: translateX(-3px); } 66% { transform: translateX(2px); } 100% { transform: none; } }
+
+/* Custom cursor (fine pointers only) */
+@media (pointer: fine) { html.cy-cur-on, html.cy-cur-on * { cursor: none !important; } }
+.cy-cur { position: fixed; left: 0; top: 0; z-index: 200; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; will-change: transform; }
+html.cy-cur-on .cy-cur.is-in { opacity: 1; }
+.cy-cur-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--color-accent); }
+.cy-cur-ring { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
+.cy-cur-ring .r { position: absolute; inset: 0; border: 2.5px solid var(--color-accent); border-radius: 50%; transition: inset 0.18s ease, opacity 0.18s ease; }
+.cy-cur-ring .r.hot { border-color: var(--cy-hot); opacity: 0; }
+.cy-cur-ring .r.cold { border-color: var(--color-accent-300); opacity: 0; }
+.cy-cur-ring.is-hover .r { inset: 14px; opacity: 0; }
+.cy-cur-ring.is-hover.is-glitch .r.hot, .cy-cur-ring.is-hover.is-glitch .r.cold { opacity: 0 !important; }
+/* Hovered target: the element itself takes the highlight */
+.cy-target { outline: 2px solid var(--color-accent) !important; outline-offset: 3px; animation: cyTarget 0.22s steps(3) both; }
+:root[data-theme="dark"] .cy-target { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 40%, transparent), 0 0 18px color-mix(in srgb, var(--color-accent) 30%, transparent); }
+@keyframes cyTarget { 0% { outline-offset: 8px; outline-color: transparent; } 34% { outline-offset: 6px; outline-color: var(--color-accent); } 67% { outline-offset: 5px; outline-color: transparent; } 100% { outline-offset: 3px; outline-color: var(--color-accent); } }
+.cy-rail.cy-target { outline: none !important; box-shadow: none !important; }
+.journal-index .cy-target { outline-offset: -2px !important; animation: none; }
+:root[data-theme="dark"] .journal-index .cy-target { box-shadow: inset 0 0 14px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+@media (prefers-reduced-motion: reduce) { .cy-target { animation: none; } }
+.cy-cur-ring.is-down .r { inset: 9px; }
+.cy-cur-ring.is-glitch .r.hot { opacity: 0.9; animation: cyCurA 0.22s steps(2) both; }
+.cy-cur-ring.is-glitch .r.cold { opacity: 0.9; animation: cyCurB 0.22s steps(2) both; }
+@keyframes cyCurA { 0% { transform: translate(-3px, 1px); clip-path: inset(0 0 55% 0); } 100% { transform: translate(2px, 0); clip-path: inset(40% 0 0 0); } }
+@keyframes cyCurB { 0% { transform: translate(3px, -1px); clip-path: inset(50% 0 0 0); } 100% { transform: translate(-2px, 0); clip-path: inset(0 0 45% 0); } }
+@media (prefers-reduced-motion: reduce) { .cy-cur-ring.is-glitch .r.hot, .cy-cur-ring.is-glitch .r.cold { animation: none !important; opacity: 0 !important; } }
+
+/* Custom find (Ctrl/Cmd+F) */
+.cy-find { position: fixed; z-index: 100; top: 84px; right: clamp(18px, 5vw, 64px); display: flex; align-items: center; gap: 2px; padding: 6px 6px 6px 0; width: min(440px, calc(100vw - 36px));
+  border: 1px solid var(--color-accent); background-color: var(--color-bg); box-shadow: var(--shadow-md);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-accent) 10%, transparent) 0 1px, transparent 1px 100%), linear-gradient(to bottom, color-mix(in srgb, var(--color-accent) 10%, transparent) 0 1px, transparent 1px 100%); background-size: 8px 8px;
+  clip-path: polygon(-20px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% + 20px), -20px calc(100% + 20px)); }
+.cy-find[hidden] { display: none; }
+.cy-find.is-open { animation: popIn 0.26s cubic-bezier(0.7, 0, 0.2, 1) backwards; }
+.cy-find.is-closing { animation: popOut 0.22s cubic-bezier(0.7, 0, 0.2, 1) both; pointer-events: none; }
+.cy-find .cf-tag { align-self: stretch; display: flex; align-items: center; margin: -6px 8px -6px 0; padding: 0 10px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; color: var(--color-bg); background: var(--color-accent-700); }
+.cy-find input { flex: 1; min-width: 0; height: 32px; border: 0; outline: 0; background: transparent; color: var(--color-text); font: 500 14px/1 var(--font-body); letter-spacing: 0.02em; }
+.cy-find input::placeholder { color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.cy-find .cf-count { font-size: 11px; letter-spacing: 0.1em; font-weight: 600; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--color-text) 60%, transparent); padding: 0 8px; }
+.cy-find.is-miss { border-color: var(--cy-hot, var(--color-accent)); }
+.cy-find.is-miss .cf-count { color: var(--cy-hot, var(--color-accent-700)); }
+.cy-find button { appearance: none; border: 0; background: transparent; color: inherit; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; }
+.cy-find button:hover { background: color-mix(in srgb, var(--color-accent) 14%, transparent); }
+.cy-find button:active { background: color-mix(in srgb, var(--color-accent) 24%, transparent); }
+.cy-find button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.cy-find .cf-esc { position: absolute; right: 14px; bottom: -1px; transform: translateY(50%); padding: 0 4px; font-size: 9px; line-height: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; color: var(--color-accent-700); background: var(--color-bg); }
+mark.cy-hit { background: color-mix(in srgb, var(--color-accent) 26%, transparent); color: inherit; box-shadow: 0 1px 0 var(--color-accent); }
+mark.cy-hit.is-on { background: var(--color-accent); color: var(--color-bg); box-shadow: 0 0 0 2px var(--color-accent), 0 0 14px color-mix(in srgb, var(--color-accent) 60%, transparent); }
+@media (max-width: 700px) { .cy-find { top: 70px; } }
+@media (prefers-reduced-motion: reduce) { .cy-find.is-open, .cy-find.is-closing { animation: none; } }
