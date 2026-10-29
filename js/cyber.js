@@ -16,7 +16,7 @@
     var t = setInterval(function () {
       p = Math.min(100, p + 7 + Math.random() * 16);
       lbl.textContent = (p < 100 ? "Jacking in · " : "Link established · ") + String(Math.floor(p)).padStart(2, "0") + "%";
-      bar.style.width = p + "%";
+      bar.style.transform = "scaleX(" + p / 100 + ")";
       if (p >= 100) { clearInterval(t); setTimeout(function () { boot.classList.add("done"); setTimeout(function () { boot.remove(); }, 400); }, 220); }
     }, 70);
   }
@@ -296,6 +296,7 @@
   var hAnim = new WeakMap();
   window.addEventListener("wheel", function (e) {
     if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    if (!e.target.closest || !e.target.closest(".rail, .journal-index")) return; // skip layout reads on ordinary page scroll
     var el = hScroller(e.target);
     if (!el) return;
     var dy = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaMode === 2 ? e.deltaY * el.clientWidth : e.deltaY;
@@ -327,7 +328,8 @@
     var glitchT = 0;
     function glitch() {
       if (reduce) return;
-      main.classList.remove("is-glitch"); void main.offsetWidth; main.classList.add("is-glitch");
+      main.classList.remove("is-glitch");
+      requestAnimationFrame(function () { main.classList.add("is-glitch"); });
       clearTimeout(glitchT); glitchT = setTimeout(function () { main.classList.remove("is-glitch"); }, 240);
     }
     function show(v) { main.classList.toggle("is-in", v); dot.classList.toggle("is-in", v); }
@@ -340,7 +342,7 @@
       if (el === cur) return;
       if (cur) cur.classList.remove("cy-target");
       cur = el;
-      if (cur) { cur.classList.remove("cy-target"); void cur.offsetWidth; cur.classList.add("cy-target"); }
+      if (cur) cur.classList.add("cy-target");
       main.classList.toggle("is-hover", !!cur);
     }
     document.addEventListener("pointerover", function (e) { setTarget(e.target.closest ? e.target.closest(HOT) : null); });

@@ -27,17 +27,20 @@ main > section.blueprint, #contact {
 .cy-page > main, .cy-page > footer, .cy-page > section { position: relative; z-index: 1; }
 
 /* Glow travelling along section borders and separators */
-.cy-edge { position: absolute; inset: -1px; pointer-events: none; z-index: 2; }
-.cy-edge i { position: absolute; display: block; background-repeat: no-repeat; filter: drop-shadow(0 0 4px var(--color-accent)); animation-timing-function: linear; animation-iteration-count: infinite; }
-.cy-edge .et, .cy-edge .eb { left: 0; right: 0; height: 1px; background-image: linear-gradient(to right, transparent, var(--color-accent), transparent); background-size: 28% 100%; animation-name: cyEdgeX; animation-duration: 14s; }
+/* Sweeps move a transform-only highlight (composited) instead of animating background-position (repaints every frame). */
+.cy-edge { position: absolute; inset: -1px; pointer-events: none; z-index: 2; overflow: hidden; }
+.cy-edge i { position: absolute; display: block; filter: drop-shadow(0 0 4px var(--color-accent)); animation-timing-function: linear; animation-iteration-count: infinite; }
+.cy-edge .et, .cy-edge .eb { left: 0; width: 28%; height: 1px; background-image: linear-gradient(to right, transparent, var(--color-accent), transparent); animation-name: cyEdgeX; animation-duration: 14s; }
 .cy-edge .et { top: 0; } .cy-edge .eb { bottom: 0; animation-direction: reverse; }
-.cy-edge .el, .cy-edge .er { top: 0; bottom: 0; width: 1px; background-image: linear-gradient(to bottom, transparent, var(--color-accent), transparent); background-size: 100% 28%; animation-name: cyEdgeY; animation-duration: 18s; }
+.cy-edge .el, .cy-edge .er { top: 0; height: 28%; width: 1px; background-image: linear-gradient(to bottom, transparent, var(--color-accent), transparent); animation-name: cyEdgeY; animation-duration: 18s; }
 .cy-edge .el { left: 0; animation-direction: reverse; } .cy-edge .er { right: 0; }
-.cy-sep { background-image: linear-gradient(to right, transparent, var(--color-accent), transparent) !important; background-color: var(--color-divider) !important; background-repeat: no-repeat; background-size: 22% 100%; filter: drop-shadow(0 0 4px var(--color-accent)); animation: cyEdgeX 7s linear infinite; }
-.cy-sep-top::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; pointer-events: none; background: linear-gradient(to right, transparent, var(--color-accent), transparent) no-repeat; background-size: 24% 100%; filter: drop-shadow(0 0 4px var(--color-accent)); animation: cyEdgeX 12s linear infinite; }
-@keyframes cyEdgeX { from { background-position: -40% 0; } to { background-position: 140% 0; } }
-@keyframes cyEdgeY { from { background-position: 0 -40%; } to { background-position: 0 140%; } }
-@media (prefers-reduced-motion: reduce) { .cy-flow, .cy-edge, .cy-sep-top::before { display: none; } .cy-sep { animation: none; background-image: none !important; filter: none; } }
+.cy-sep { position: relative; overflow: hidden; background-color: var(--color-divider) !important; filter: drop-shadow(0 0 4px var(--color-accent)); }
+.cy-sep::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 22%; background-image: linear-gradient(to right, transparent, var(--color-accent), transparent); --sweep: 455%; animation: cyEdgeX 7s linear infinite; animation-delay: inherit; }
+.cy-sep-top { clip-path: inset(-2px 0 0 0); }
+.cy-sep-top::before { content: ""; position: absolute; left: 0; top: -1px; width: 24%; height: 1px; pointer-events: none; background: linear-gradient(to right, transparent, var(--color-accent), transparent); filter: drop-shadow(0 0 4px var(--color-accent)); --sweep: 417%; animation: cyEdgeX 12s linear infinite; }
+@keyframes cyEdgeX { from { transform: translateX(-100%); } to { transform: translateX(var(--sweep, 357%)); } }
+@keyframes cyEdgeY { from { transform: translateY(-100%); } to { transform: translateY(var(--sweep, 357%)); } }
+@media (prefers-reduced-motion: reduce) { .cy-flow, .cy-edge, .cy-sep-top::before { display: none; } .cy-sep::after { display: none; } }
 
 /* CRT scanlines + vignette */
 .cy-scan { position: fixed; inset: 0; z-index: 85; pointer-events: none;
@@ -134,7 +137,6 @@ main > section.blueprint, #contact {
 .cy-card.timeline-card::after { display: none; }
 
 /* Skill meters: lit segments glow, flicker in */
-.cy-meter > span { transition: box-shadow 0.2s; }
 :root[data-theme="dark"] .cy-meter > span.on { box-shadow: 0 0 6px var(--color-accent); }
 
 /* Nav brackets */
@@ -162,10 +164,10 @@ main > section.blueprint, #contact {
 @keyframes cyHolo { to { transform: translateX(260%); } }
 
 /* Boot overlay */
-.cy-boot { position: fixed; inset: 0; z-index: 120; background: var(--color-bg); display: grid; place-items: center; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; color: var(--color-accent-700); font-variant-numeric: tabular-nums; transition: opacity 0.35s ease, visibility 0.35s; }
+.cy-boot { position: fixed; inset: 0; z-index: 120; background: var(--color-bg); display: grid; place-items: center; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; color: var(--color-accent-700); font-variant-numeric: tabular-nums; transition: opacity 0.35s ease; }
 .cy-boot.done { opacity: 0; visibility: hidden; }
 .cy-boot .bar { width: min(280px, 70vw); height: 4px; margin-top: 10px; border: 1px solid var(--color-accent); }
-.cy-boot .bar i { display: block; height: 100%; width: 0; background: var(--color-accent); transition: width 0.12s linear; }
+.cy-boot .bar i { display: block; height: 100%; width: 100%; background: var(--color-accent); transform-origin: 0 50%; transform: scaleX(0); transition: transform 0.12s linear; }
 
 @media (prefers-reduced-motion: reduce) {
   .cy-holo::after, .cy-bars i, .cy-hud .live::before, .cy-status::before { animation: none !important; }
